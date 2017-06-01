@@ -1,5 +1,9 @@
 // Global polygon mesh
 var boxMesh;
+
+//
+var plane;
+
 // Global scene object
 var scene;
 // Global camera object
@@ -12,7 +16,7 @@ var yRotation = 0.0;
 var xSpeed = 0.0;
 var ySpeed = 0.0;
 // Translation along the z axis
-var zTranslation = 5;
+var zTranslation = 0;
 
 const imageCount = 42;
 const channelCount = 7;
@@ -88,7 +92,7 @@ function initializeScene() {
 	}
 
 	// Set the background color
-	renderer.setClearColor(0xc000000);
+	renderer.setClearColor(0xc262626);
 
 	// Get the size of the inner window (content area) to create a full size renderer
 	canvasWidth = window.innerWidth/1.5;
@@ -129,17 +133,6 @@ function initializeScene() {
 	camera.lookAt(scene.position);
 	scene.add(camera);
 
-	var boxMaterial = new THREE.MeshBasicMaterial({
-		 side:THREE.DoubleSide
-	});
-	// Create the cube
-	boxGeometry = new THREE.BoxGeometry(2.0, 2.0, 2.0);
-	// Create a mesh and insert the geometry and the material. Translate the whole mesh
-	// by 1.5 on the x axis and by 4 on the z axis and add the mesh to the scene.
-	boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
-	boxMesh.position.set(0.0, 0.0, 4.0);
-	scene.add(boxMesh);
-
 	// Load an image as texture
 	for (ch = 0; ch < channelCount; ++ch) {
 		var textureLoader = new THREE.TextureLoader(manager[ch]);
@@ -147,6 +140,35 @@ function initializeScene() {
 			textureArray[ch * imageCount + img] = textureLoader.load(channels.path[ch].concat(img+1,".png"));
 		}
 	}
+
+	// var boxMaterial = new THREE.MeshBasicMaterial({
+	// 	 side:THREE.DoubleSide
+	// });
+	// // Create the cube
+	// boxGeometry = new THREE.BoxGeometry(2.0, 2.0, 2.0);
+	// // Create a mesh and insert the geometry and the material. Translate the whole mesh
+	// // by 1.5 on the x axis and by 4 on the z axis and add the mesh to the scene.
+	// boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+	// boxMesh.position.set(0.0, 0.0, 4.0);
+	// scene.add(boxMesh);
+
+	var planeMaterial = new THREE.MeshBasicMaterial({
+		side:THREE.DoubleSide,
+		transparent:true,
+		depthWrite:false
+	});
+
+	planeMaterial.blending = THREE.AdditiveBlending;
+
+	
+	// Create a mesh and insert the geometry and the material. Translate the whole mesh
+	// by 1.5 on the x axis and by 4 on the z axis and add the mesh to the scene.
+	plane = new THREE.Mesh(new THREE.PlaneGeometry(8,8),planeMaterial);
+	plane.material.map = textureArray[0];
+	plane.overdraw = true;
+	scene.add(plane);
+
+
 
 	// // Ambient light has no direction, it illuminates every object with the same
 	// // intensity. If only ambient light is used, no shading effects will occur.
@@ -189,7 +211,7 @@ function initializeScene() {
  * Select current texture to display in loaded texture arrays
  */
 function selectTexture(channel, image) {
-	boxMesh.material.map = textureArray[channel * imageCount + image];
+	plane.material.map = textureArray[channel * imageCount + image];
 	document.getElementById("overlaytext").innerHTML = channels.name[channel].concat(image+1);
 	document.getElementById("myRange").value = image;
 }
@@ -245,7 +267,7 @@ function onDocumentKeyDown(event) {
 		yRotation = 0.0;
 		xSpeed = 0.0;
 		ySpeed = 0.0;
-		zTranslation = 5;
+		zTranslation = 0;
  }
 	selectTexture(this.currentChannel, this.currentImage);
 }
@@ -275,12 +297,13 @@ function animateScene() {
 	//directionalLight.position = camera.position;
 	if (channelLoaded[0]) {
 		// Increase the x, y and z rotation of the cube
-	  xRotation += xSpeed;
-	  yRotation += ySpeed;
-	  boxMesh.rotation.set(xRotation, yRotation, 0.0);
+	  // xRotation += xSpeed;
+	  // yRotation += ySpeed;
+	  // boxMesh.rotation.set(xRotation, yRotation, 0.0);
 
-	  // Apply the the translation along the z axis
-	  boxMesh.position.z = zTranslation;
+	  // // Apply the the translation along the z axis
+	  // boxMesh.position.z = zTranslation;
+	  plane.position.z = zTranslation;
 		// Map the 3D scene down to the 2D screen (render the frame)
 		renderScene();
 	}
